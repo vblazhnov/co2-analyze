@@ -6,8 +6,10 @@
 #define CO2_SENSOR_ERROR 0xff
 #define MIN_VALUE 350
 #define MAX_VALUE 5000
+#define SENSOR_TX_PIN 5
+#define SENSOR_RX_PIN 6
 
-SoftwareSerial sensorSerial(5, 6); // D5 - sensor's TX, D6 - sensor's RX
+SoftwareSerial sensorSerial(SENSOR_TX_PIN, SENSOR_RX_PIN);
 const byte cmd[CMD_LEN] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79};
 const byte offABCCmd[CMD_LEN] = {0xFF, 0x01, 0x79, 0x00, 0x00, 0x00, 0x00, 0x00, 0x85};
 byte response[CMD_LEN] = {};
@@ -17,6 +19,7 @@ uint get_co2()
   sensorSerial.write(cmd, CMD_LEN);
   memset(response, 0, CMD_LEN);
   sensorSerial.readBytes(response, CMD_LEN);
+  
 #if DEBUG
   Serial.println("Answer:");
   for (int i = 0; i < CMD_LEN; ++i)
@@ -28,7 +31,7 @@ uint get_co2()
   
   if (check_response())
   {
-    uint result = response[2] * 256 + response[3];
+    uint result = (response[2] << 8) + response[3];
     if (result >= MIN_VALUE && result <= MAX_VALUE)
     {
       return result;
